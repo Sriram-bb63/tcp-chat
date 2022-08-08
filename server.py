@@ -1,5 +1,6 @@
 import socket
 import threading
+import json
 
 
 HOST = "127.0.0.1"
@@ -9,13 +10,12 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(5)
 
-
-global clients
 clients = []
-
-global nicknames
 nicknames = []
 
+with open("admins.json", "r") as f:
+    admins = json.load(f)
+active_admins = []
 
 def broadcast(message, sender_client):
     for client in clients:
@@ -27,6 +27,17 @@ def handle_clients(client, address):
     while True:
         try:
             message = client.recv(1024).decode("utf-8")
+            if message.split()[0] == "ADMIN":
+                username = message.split()[1]
+                password = message.split()[2]
+                if username in admins and admins[username] == password:
+                    active_admins.append(client)
+                    i = clients.index(client)
+                    message = f"SERVER: {nicknames[i]} is now an admin"
+                    print(f"NEW ADMIN --- {address} | {nicknames[i]}")
+                    client.send("ADMIN OK".encode("utf-8"))
+                else:
+                    client.send("ADMIN NOT OK".encode("utf-8"))
             broadcast(message, client)
         except Exception as e:
             i = clients.index(client)

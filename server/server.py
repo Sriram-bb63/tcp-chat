@@ -43,30 +43,26 @@ except:
         sys.exit()
 s.listen(5)
 
-clients = []
-nicknames = []
-with open("admins.json", "r") as f:
+clients = {}
+with open("server/admins.json", "r") as f:
     admins_json = json.load(f)
 
 
 def broadcast(message, sender):
     for client in clients:
         if client != sender:
-            client.send(message.encode(ENCODING_FORMAT))
+            clients[client].send(message.encode(ENCODING_FORMAT))
 
-def handle_clients(client, address):
+def handle_clients(nickname, client, address):
     while True:
         try:
             message = client.recv(1024).decode(ENCODING_FORMAT)
             print(message)
             broadcast(message, client)
         except Exception as e:
-            i = clients.index(client)
-            broadcast(f"SERVER------: {nicknames[i]} disconnected", client)
-            print(f"DISCONNECT {nicknames[i]} | {address}")
-            clients.pop(i)
-            nicknames.pop(i)
-            print(f"ERROR\n{e}")
+            del clients[nickname]
+            broadcast(f"SERVER------: {nickname} disconnected", client)
+            print(f"DISCONNECT {nickname} | {address}")
             break
 
 def receive_clients():
@@ -76,11 +72,10 @@ def receive_clients():
             print(f"NEW CONNECTION {address}")
             client.send("NICKNAME".encode(ENCODING_FORMAT))
             nickname = client.recv(1024).decode(ENCODING_FORMAT)
-            clients.append(client)
-            nicknames.append(nickname)
+            clients[nickname] = client
             print(f"CONNECTION NAMED: {address} | {nickname}")
             broadcast(f"SERVER------: {nickname} connected", client)
-            t = threading.Thread(target=handle_clients, args=[client, address])
+            t = threading.Thread(target=handle_clients, args=[nickname, client, address])
             t.start()
         except Exception as e:
             print(f"ERROR --- {e}")

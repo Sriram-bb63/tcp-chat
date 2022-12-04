@@ -20,7 +20,7 @@ if server_type == "1":
     HOST = "127.0.0.1"
     SERVER_TYPE = "Local Host"
 elif server_type == "2":
-    public_ip = get("https://api.ipify.org").content.decode(ENCODING_FORMAT)
+    public_ip = socket.gethostbyname(socket.gethostname())
     HOST = public_ip
     SERVER_TYPE = "Public Host"
 else:

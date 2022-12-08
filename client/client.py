@@ -6,7 +6,15 @@ import sys
 ENCODING_FORMAT = "utf-8"
 HOST = "127.0.0.1"
 PORT = 9090
+ALT_PORT = 9091
 FILE_DESTINATION = "client/files"
+
+server_address = input("Enter server address (xxx.xxx.xxx.xxx/xxxx): ")
+if server_address == "":
+    print("Continuing with local host option")
+else:
+    HOST = server_address.split("/")[0]
+    PORT = server_address.split("/")[-1]
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((HOST, PORT))

@@ -74,10 +74,16 @@ def kick_client(nickname, client, message):
             to_kick_client.send(f"{SERVER_MESSAGE_PREFIX} You have been kicked out by {nickname}".encode(ENCODING_FORMAT))
             to_kick_client.send("END".encode(ENCODING_FORMAT))
             del clients[to_kick]
-            print(clients)
     else:
         client.send(f"{SERVER_MESSAGE_PREFIX} You have to be an admin to use this command".encode(ENCODING_FORMAT))
 
+def rename_client(nickname, client, message):
+    new_name = message.split()[-1]
+    clients[new_name] = clients.pop(nickname)
+    client.send(f"RENAME {new_name}".encode(ENCODING_FORMAT))
+    client.send(f"{SERVER_MESSAGE_PREFIX} You renamed to {nickname}".encode(ENCODING_FORMAT))
+    broadcast(f"{SERVER_MESSAGE_PREFIX} {nickname} renamed to {new_name}", client)
+    print(f"RENAME {nickname} to {new_name}")
 
 def broadcast(message, sender, encode=True):
     for client in clients:
@@ -105,6 +111,8 @@ def handle_clients(nickname, client, address):
                     admin_login(nickname, client, message)
                 elif "KICK" in message:
                     kick_client(nickname, client, message)
+                elif "RENAME" in message:
+                    rename_client(nickname, client, message)
                 else:
                     broadcast(message, client)
         except Exception as e:

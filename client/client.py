@@ -14,7 +14,7 @@ if server_address == "":
     print("Continuing with local host option")
 else:
     HOST = server_address.split("/")[0]
-    PORT = server_address.split("/")[-1]
+    PORT = int(server_address.split("/")[-1])
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((HOST, PORT))
@@ -38,6 +38,7 @@ def send_message():
             client.send(message.encode(ENCODING_FORMAT))
 
 def receive_message():
+    global nickname
     filenames = []
     while True:
         message = client.recv(1024)
@@ -66,6 +67,8 @@ def receive_message():
                     filenames.clear()
                     print("Filename stack clearing...")
                     print("Try again")
+            elif message.startswith("RENAME"):
+                nickname = message.split()[-1]
             elif message.endswith("END"):
                 sys.exit()
             else:

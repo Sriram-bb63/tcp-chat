@@ -19,8 +19,10 @@ else:
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((HOST, PORT))
 
+run = True
+
 def send_message():
-    while True:
+    while run:
         message = input("")
         if message.startswith("SEND FILE"):
             path = message.split()[-1]
@@ -39,8 +41,9 @@ def send_message():
 
 def receive_message():
     global nickname
+    global run
     filenames = []
-    while True:
+    while run:
         message = client.recv(1024)
         if message[:7] == b"<START>":
             print(f"Receiving file: {filenames[0]}")
@@ -70,15 +73,10 @@ def receive_message():
             elif message.startswith("RENAME"):
                 nickname = message.split()[-1]
             elif message.endswith("END"):
-                sys.exit()
+                print(f"run: {run}")
+                run = False
             else:
                 print(message)
-
-def run_threads():
-    send_thread = threading.Thread(target=send_message)
-    send_thread.start()
-    receive_thread = threading.Thread(target=receive_message)
-    receive_thread.start()
 
 
 nickname = input("Enter nickname: ")
@@ -89,4 +87,13 @@ Nickname must be less than 15 characters long
 """)
     nickname = input("Enter nickname again: ")
 
-run_threads()
+send_thread = threading.Thread(target=send_message)
+send_thread.start()
+receive_thread = threading.Thread(target=receive_message)
+receive_thread.start()
+
+while True:
+    if run == False:
+        send_thread.join()
+        receive_thread.join()
+        sys.exit("Exit")

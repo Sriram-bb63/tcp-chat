@@ -81,7 +81,7 @@ def rename_client(nickname, client, message):
     new_name = message.split()[-1]
     clients[new_name] = clients.pop(nickname)
     client.send(f"RENAME {new_name}".encode(ENCODING_FORMAT))
-    client.send(f"{SERVER_MESSAGE_PREFIX} You renamed to {nickname}".encode(ENCODING_FORMAT))
+    client.send(f"{SERVER_MESSAGE_PREFIX} You renamed to {new_name}".encode(ENCODING_FORMAT))
     broadcast(f"{SERVER_MESSAGE_PREFIX} {nickname} renamed to {new_name}", client)
     print(f"RENAME {nickname} to {new_name}")
 
